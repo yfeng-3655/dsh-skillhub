@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- Add a "show entry in sidebar" switch at the top of Settings → Skills & MCPs
+  - Controls the `sidebar.panellist` registration; the entry can be hidden without losing access (the page stays under Settings)
+  - Default is visible, matching all earlier versions
+  - Preference is persisted per browser via `localStorage` (`dsh-skillhub:sidebar-panellist`) and applies instantly, with no restart
+  - A blocked or unavailable `localStorage` degrades to the visible default instead of throwing
+  - Covered by `tests/client-sidebar-toggle.test.js`
+
 ## 0.2.1
 
 - Display and manage global skills located in `~/.agents/skills` alongside DSH skills (`~/.dsh/skills`)
