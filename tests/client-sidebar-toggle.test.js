@@ -112,13 +112,13 @@ function createContext() {
     entries,
     ledger,
     panelIds: () => slots.entriesOfSlot('sidebar.panellist').map((entry) => entry.options.id),
-    settingsEntry: () => entries.find((entry) => entry.options.name === 'settings.section'),
+    pluginConfigEntry: () => entries.find((entry) => entry.options.name === 'plugins.bundle.config'),
   }
 }
 
 /**
  * Boot the plugin against a fresh context and wire up both slot injections.
- * @returns the context, with the captured settings checkbox exposed.
+ * @returns the context, with the captured plugin-page checkbox exposed.
  */
 function boot(storage) {
   const { plugin, captured } = loadPlugin(storage)
@@ -126,8 +126,10 @@ function boot(storage) {
   const env = createContext()
   plugin.apply(env.ctx)
   assert.ok(env.injections.has('sidebar.panellist'), 'apply() must inject sidebar.panellist')
+  assert.ok(env.injections.has('plugins.bundle.config'), 'apply() must inject plugins.bundle.config')
   assert.ok(env.injections.has('settings.section'), 'apply() must inject settings.section')
   env.disposeSidebar = env.injections.get('sidebar.panellist')()
+  env.injections.get('plugins.bundle.config')()
   env.injections.get('settings.section')()
   return { env, plugin, captured }
 }
@@ -139,19 +141,30 @@ test('the sidebar entry is shown by default', () => {
   assert.equal(storage.map.get(PREF_KEY), undefined, 'no preference is written before the first toggle')
 })
 
-test('the settings page renders one labelled switch reflecting the current preference', () => {
+test('the plugin card renders one labelled switch reflecting the current preference', () => {
   const storage = mapStorage()
   const { env, captured } = boot(storage)
-  env.settingsEntry().component({ t: (key) => key })
-  assert.ok(captured.checkbox, 'settings page must render a switch checkbox')
+  assert.equal(env.pluginConfigEntry().options.key, 'dsh-skillhub', 'the section is keyed by the installed bundle name')
+  env.pluginConfigEntry().component({ t: (key) => key })
+  assert.ok(captured.checkbox, 'the plugin card must render a switch checkbox')
   assert.equal(captured.checkbox.checked, true)
   assert.equal(captured.checkbox['aria-label'], 'sidebarShow')
+})
+
+test('the SkillHub settings section no longer hosts the preference switch', () => {
+  const storage = mapStorage()
+  const { env, captured } = boot(storage)
+  const settings = env.entries.find((entry) => entry.options.name === 'settings.section')
+  assert.ok(settings, 'the settings section registration is kept for the market itself')
+  captured.checkbox = null
+  settings.component({ t: (key) => key })
+  assert.equal(captured.checkbox, null, 'the market must not render the sidebar switch anymore')
 })
 
 test('toggling the switch off removes the sidebar entry, and back on restores it', () => {
   const storage = mapStorage()
   const { env, captured } = boot(storage)
-  env.settingsEntry().component({ t: (key) => key })
+  env.pluginConfigEntry().component({ t: (key) => key })
   const { onChange } = captured.checkbox
 
   onChange({ target: { checked: false } })
@@ -191,7 +204,7 @@ test('unavailable storage falls back to visible without throwing', () => {
   }
   const { env, plugin, captured } = boot(hostile)
   assert.deepEqual(env.panelIds(), ['skillhub'], 'a blocked localStorage must not hide the entry')
-  env.settingsEntry().component({ t: (key) => key })
+  env.pluginConfigEntry().component({ t: (key) => key })
   assert.equal(captured.checkbox.checked, true)
   assert.doesNotThrow(() => captured.checkbox.onChange({ target: { checked: false } }), 'a blocked write must not throw')
   plugin.apply(createContext().ctx)

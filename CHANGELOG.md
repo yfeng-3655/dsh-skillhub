@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- Move the "show entry in sidebar" switch into the official plugin manager
+  - It now renders in the configuration section of this bundle's own card (Plugins → `dsh-skillhub`), keyed by the installed package name via `plugins.bundle.config`
+  - The SkillHub settings section no longer hosts the switch; it still hosts the full market (browse, installed, MCP)
+  - Declares `@deepseek-ai/dsh-client-ui-plugin-manager` in `dsh.client.inject`, which owns that slot
+  - Behavior is unchanged: default visible, persisted per browser via `localStorage` (`dsh-skillhub:sidebar-panellist`), applied instantly, no restart
+
 ## 0.3.0
 
 - Add a "show entry in sidebar" switch at the top of Settings → Skills & MCPs

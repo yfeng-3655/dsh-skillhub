@@ -30,7 +30,7 @@ dsh plugin --profile web add github:vonweller/dsh-skillhub#<sha>
   - Pages the public skillhub.cn catalog (search, category, source, sort), preview SKILL.md, and one-click install/uninstall into `~/.dsh/skills`
   - Scans and manages installed skills across both `~/.dsh/skills` and global `~/.agents/skills` with location badges and search filtering
 - **Sidebar entry toggle**:
-  - A switch at the top of **Settings → Skills & MCPs** controls whether the entry appears in the sidebar panel list
+  - A switch in the configuration section of this plugin's own card in the official plugin manager (**Plugins → `dsh-skillhub`**) controls whether the entry appears in the sidebar panel list
   - The default is visible, matching earlier versions; the preference is stored per browser in `localStorage` and applies immediately — no restart
   - With the entry hidden, the page stays reachable from Settings
 - **MCP Server Management**:
@@ -66,7 +66,7 @@ MIT
 DeepSeek Harness 插件：在 **侧边栏 / 设置 → 技能与 MCP** 浏览 [skillhub.cn](https://skillhub.cn/) 的技能库并管理外部 MCP (Model Context Protocol) 服务器。
 
 - **技能市场**：浏览公共技能库，一键安装/卸载到 `~/.dsh/skills/<name>/SKILL.md`，由官方 `ctx.skills` 自动发现。
-- **侧边栏入口开关**：在 **设置 → 技能与 MCP** 页面顶部有一个开关，控制侧边栏是否显示该入口。默认显示（与原版本行为一致）；偏好按浏览器存在 `localStorage` 中，切换即时生效、无需重启；关闭后仍可从设置页进入。
+- **侧边栏入口开关**：开关位于官方插件管理器中本插件（**插件 → `dsh-skillhub`**）的配置区块内，控制侧边栏是否显示该入口。默认显示（与原版本行为一致）；偏好按浏览器存在 `localStorage` 中，切换即时生效、无需重启；关闭后仍可从设置页进入。
 - **MCP 服务管理**：
   - 自动发现 Profile 系统配置与用户自建的全部 MCP 服务器，直观展示连接状态和注册工具列表
   - 独立开关：一键启停任意 MCP 服务器，禁用时实时向模型屏蔽对应工具，无需重启
