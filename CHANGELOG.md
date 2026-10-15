@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1
+
+- Sidebar entry now defaults to hidden; the switch is an explicit opt-in
+  - Previously the entry was visible unless the user turned it off, so every fresh install added a sidebar row
+  - Now only a stored `1` shows it, so a clean browser profile keeps the sidebar free of this entry
+  - A blocked or unavailable `localStorage` now degrades to hidden (it used to degrade to visible)
+  - The page itself stays reachable at any time from Settings → Skills & MCPs
+
 ## 0.4.0
 
 - Move the "show entry in sidebar" switch into the official plugin manager

@@ -134,10 +134,10 @@ function boot(storage) {
   return { env, plugin, captured }
 }
 
-test('the sidebar entry is shown by default', () => {
+test('the sidebar entry is hidden by default', () => {
   const storage = mapStorage()
   const { env } = boot(storage)
-  assert.deepEqual(env.panelIds(), ['skillhub'])
+  assert.deepEqual(env.panelIds(), [], 'a fresh install must not add a sidebar row')
   assert.equal(storage.map.get(PREF_KEY), undefined, 'no preference is written before the first toggle')
 })
 
@@ -147,7 +147,7 @@ test('the plugin card renders one labelled switch reflecting the current prefere
   assert.equal(env.pluginConfigEntry().options.key, 'dsh-skillhub', 'the section is keyed by the installed bundle name')
   env.pluginConfigEntry().component({ t: (key) => key })
   assert.ok(captured.checkbox, 'the plugin card must render a switch checkbox')
-  assert.equal(captured.checkbox.checked, true)
+  assert.equal(captured.checkbox.checked, false)
   assert.equal(captured.checkbox['aria-label'], 'sidebarShow')
 })
 
@@ -161,51 +161,51 @@ test('the SkillHub settings section no longer hosts the preference switch', () =
   assert.equal(captured.checkbox, null, 'the market must not render the sidebar switch anymore')
 })
 
-test('toggling the switch off removes the sidebar entry, and back on restores it', () => {
+test('toggling the switch on adds the sidebar entry, and back off removes it', () => {
   const storage = mapStorage()
   const { env, captured } = boot(storage)
   env.pluginConfigEntry().component({ t: (key) => key })
   const { onChange } = captured.checkbox
+
+  onChange({ target: { checked: true } })
+  assert.equal(storage.map.get(PREF_KEY), '1', 'preference persisted as 1')
+  assert.deepEqual(env.panelIds(), ['skillhub'], 'sidebar row appears when the switch is on')
+  assert.equal(env.ledger.registered, 1, 'exactly one registration')
 
   onChange({ target: { checked: false } })
   assert.equal(storage.map.get(PREF_KEY), '0', 'preference persisted as 0')
   assert.deepEqual(env.panelIds(), [], 'sidebar row disappears when the switch is off')
   assert.equal(env.ledger.disposed, 1, 'the previous registration is disposed, not leaked')
 
-  onChange({ target: { checked: true } })
-  assert.equal(storage.map.get(PREF_KEY), '1', 'preference persisted as 1')
-  assert.deepEqual(env.panelIds(), ['skillhub'], 'sidebar row restored')
-  assert.equal(env.ledger.registered, 2, 'exactly one re-registration')
-
-  onChange({ target: { checked: true } })
-  assert.equal(env.ledger.registered, 2, 'setting the same value twice does not churn registrations')
+  onChange({ target: { checked: false } })
+  assert.equal(env.ledger.registered, 1, 'setting the same value twice does not churn registrations')
 })
 
 test('a stored preference is honoured on the next page load', () => {
-  const first = boot(mapStorage(new Map([[PREF_KEY, '0']])))
-  assert.deepEqual(first.env.panelIds(), [], 'stored "0" keeps the sidebar row hidden')
+  const hidden = boot(mapStorage(new Map([[PREF_KEY, '0']])))
+  assert.deepEqual(hidden.env.panelIds(), [], 'stored "0" keeps the sidebar row hidden')
 
   const shown = boot(mapStorage(new Map([[PREF_KEY, '1']])))
   assert.deepEqual(shown.env.panelIds(), ['skillhub'], 'stored "1" restores the sidebar row')
 })
 
 test('the plugin unload disposer removes the sidebar contribution', () => {
-  const { env } = boot(mapStorage())
+  const { env } = boot(mapStorage(new Map([[PREF_KEY, '1']])))
   assert.deepEqual(env.panelIds(), ['skillhub'])
   env.disposeSidebar()
   assert.deepEqual(env.panelIds(), [], 'disposing the injection removes the entry')
 })
 
-test('unavailable storage falls back to visible without throwing', () => {
+test('unavailable storage falls back to hidden without throwing', () => {
   const hostile = {
     getItem() { throw new Error('blocked') },
     setItem() { throw new Error('blocked') },
     removeItem() { throw new Error('blocked') },
   }
   const { env, plugin, captured } = boot(hostile)
-  assert.deepEqual(env.panelIds(), ['skillhub'], 'a blocked localStorage must not hide the entry')
+  assert.deepEqual(env.panelIds(), [], 'a blocked localStorage must not show the entry')
   env.pluginConfigEntry().component({ t: (key) => key })
-  assert.equal(captured.checkbox.checked, true)
+  assert.equal(captured.checkbox.checked, false)
   assert.doesNotThrow(() => captured.checkbox.onChange({ target: { checked: false } }), 'a blocked write must not throw')
   plugin.apply(createContext().ctx)
 })
